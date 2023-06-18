@@ -51,11 +51,21 @@
 	}
 
 	function flipX() {
+		if (rotate % 180 !== 0) {
+			scaleY *= -1;
+			updateTransform();
+			return;
+		}
 		scaleX *= -1;
 		updateTransform();
 	}
 
 	function flipY() {
+		if (rotate % 180 !== 0) {
+			scaleX *= -1;
+			updateTransform();
+			return;
+		}
 		scaleY *= -1;
 		updateTransform();
 	}
