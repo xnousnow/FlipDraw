@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { RotateCw, RotateCcw, FlipHorizontal2, FlipVertical2, XOctagon } from 'lucide-svelte';
+	import {
+		RotateCw,
+		RotateCcw,
+		FlipHorizontal2,
+		FlipVertical2,
+		XOctagon,
+		PenLine,
+		Spline
+	} from 'lucide-svelte';
 
 	let canvas: HTMLCanvasElement;
 	let context: CanvasRenderingContext2D;
@@ -17,8 +25,12 @@
 	let lastX = 0;
 	let lastY = 0;
 
+	let isLine = true;
+	let lineStartX = 0;
+	let lineStartY = 0;
+
 	function handleMouseMove(event: MouseEvent) {
-		if (!isDrawing) return;
+		if (!isDrawing || isLine) return;
 		context.beginPath();
 		context.moveTo(lastX, lastY);
 		context.lineTo(event.offsetX, event.offsetY);
@@ -29,11 +41,24 @@
 	}
 
 	function handleMouseDown(event: MouseEvent) {
-		isDrawing = true;
+		if (isLine) {
+			[lineStartX, lineStartY] = [event.offsetX, event.offsetY];
+			return;
+		}
 		[lastX, lastY] = [event.offsetX, event.offsetY];
+		isDrawing = true;
 	}
 
-	function handleMouseUp() {
+	function handleMouseUp(event: MouseEvent) {
+		if (isLine) {
+			context.beginPath();
+			context.moveTo(lineStartX, lineStartY);
+			context.lineTo(event.offsetX, event.offsetY);
+			context.strokeStyle = '#000000';
+			context.lineWidth = 10;
+			context.stroke();
+			return;
+		}
 		isDrawing = false;
 	}
 
@@ -71,7 +96,7 @@
 	}
 </script>
 
-<div class="grid grid-cols-[1fr_auto] grid-rows-[auto_1fr] w-screen h-screen">
+<div class="grid grid-cols-[1fr_auto] grid-rows-[auto_1fr] w-screen h-screen" class:cursor-cell={isLine}>
 	<h1 class="text-5xl font-extrabold col-span-2 p-10">
 		<span class="text-blue-500">Flip</span>Draw
 	</h1>
@@ -84,6 +109,16 @@
 		/>
 	</section>
 	<section class="flex flex-col pr-16 items-center justify-center gap-5">
+		<button
+			class="bg-neutral-100 p-5 rounded-2xl hover:bg-neutral-200 active:bg-neutral-300"
+			on:click={() => (isLine = !isLine)}
+		>
+			{#if isLine}
+				<PenLine size="80" />
+			{:else}
+				<Spline size="80" />
+			{/if}
+		</button>
 		<button
 			class="bg-neutral-100 p-5 rounded-2xl hover:bg-neutral-200 active:bg-neutral-300"
 			on:click={() => r(90)}
